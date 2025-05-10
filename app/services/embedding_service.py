@@ -32,4 +32,4 @@ def embed_and_store(text, source_id):
     for i, chunk in enumerate(chunks):
         embedding = openai.Embedding.create(input=chunk, model="text-embedding-ada-002")["data"][0]["embedding"]
         collection.add(ids=[f"{source_id}_chunk_{i}"], embeddings=[embedding], documents=[chunk])
-    client.persist()
+    #client.persist()
