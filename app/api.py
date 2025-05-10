@@ -2,7 +2,8 @@ from fastapi import APIRouter, UploadFile, File, Form
 from pydantic import BaseModel
 from app.services.openai_service import get_turf_response
 from fastapi.responses import JSONResponse
-from app.services.retrieval_service import retrieve_relevant_context, generate_response, extract_text_from_pdf, extract_text_from_url, embed_and_store
+from app.services.retrieval_service import retrieve_relevant_context, generate_response
+from app.services.embedding_service import extract_text_from_pdf, extract_text_from_url, embed_and_store
 
 router = APIRouter()
 
