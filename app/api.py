@@ -1,7 +1,8 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, UploadFile, File, Form
 from pydantic import BaseModel
 from app.services.openai_service import get_turf_response
 from fastapi.responses import JSONResponse
+from app.services.retrieval_service import retrieve_relevant_context, generate_response, extract_text_from_pdf, extract_text_from_url, embed_and_store
 
 router = APIRouter()
 
@@ -28,3 +29,27 @@ def diagnose(query: Query):
         print("Error in get_turf_response:", e)
         result = "An error occurred while generating a response."
     return {"response": result}
+
+@router.post("/rag-diagnose")
+def rag_diagnose(query: Query):
+    context = retrieve_relevant_context(query.user_input)
+    if not context:
+        return {"response": "Sorry, no relevant information found in the knowledge base."}
+    result = generate_response(query.user_input, context)
+    return {"response": result}
+
+@router.post("/admin/upload-pdf")
+async def upload_pdf(file: UploadFile = File(...), source_id: str = Form(...)):
+    contents = await file.read()
+    with open(f"/tmp/{file.filename}", "wb") as f:
+        f.write(contents)
+
+    text = extract_text_from_pdf(f"/tmp/{file.filename}")
+    embed_and_store(text, source_id)
+    return {"status": "PDF processed and embedded", "source_id": source_id}
+
+@router.post("/admin/load-url")
+def load_url(url: str, source_id: str):
+    text = extract_text_from_url(url)
+    embed_and_store(text, source_id)
+    return {"status": "URL processed and embedded", "source_id": source_id}
