@@ -1,4 +1,5 @@
 import openai
+import os
 import pdfplumber
 import requests
 from bs4 import BeautifulSoup
@@ -9,7 +10,7 @@ from chromadb.config import Settings
 client = chromadb.Client(Settings(persist_directory="./chroma_store"))
 collection = client.get_or_create_collection("turf_docs")
 
-openai.api_key = "YOUR_OPENAI_API_KEY"
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 def extract_text_from_pdf(pdf_path):
     text = ""
