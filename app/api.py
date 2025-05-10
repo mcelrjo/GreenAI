@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File, Form
+from fastapi import APIRouter, UploadFile, File, Form, BackgroundTasks
 from pydantic import BaseModel
 from app.services.openai_service import get_turf_response
 from fastapi.responses import JSONResponse
@@ -40,14 +40,24 @@ def rag_diagnose(query: Query):
     return {"response": result}
 
 @router.post("/admin/upload-pdf")
-async def upload_pdf(file: UploadFile = File(...), source_id: str = Form(...)):
+async def upload_pdf(
+    background_tasks: BackgroundTasks,
+    file: UploadFile = File(...),
+    source_id: str = Form(...)
+):
     contents = await file.read()
-    with open(f"/tmp/{file.filename}", "wb") as f:
+    temp_path = f"/tmp/{file.filename}"
+    with open(temp_path, "wb") as f:
         f.write(contents)
 
-    text = extract_text_from_pdf(f"/tmp/{file.filename}")
+    # Schedule background processing
+    background_tasks.add_task(process_pdf_background, temp_path, source_id)
+
+    return {"status": "PDF received and processing started", "source_id": source_id}
+
+def process_pdf_background(temp_path: str, source_id: str):
+    text = extract_text_from_pdf(temp_path)
     embed_and_store(text, source_id)
-    return {"status": "PDF processed and embedded", "source_id": source_id}
 
 @router.post("/admin/load-url")
 def load_url(url: str, source_id: str):
