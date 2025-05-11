@@ -1,24 +1,26 @@
 import openai
 import os
+from app.services.conversation_service import get_session_messages, add_message
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-def get_turf_response(user_input: str) -> str:
+def get_turf_response(user_input: str, session_id: str = "default") -> str:
+    # Add user input to session memory
+    add_message(session_id, "user", user_input)
+
+    # Retrieve the full conversation
+    messages = get_session_messages(session_id)
+
+    # Make OpenAI API call with the full history
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
-        messages=[
-            {
-                "role": "system",
-                "content": (
-                    "You are a highly specialized AI assistant trained only to answer questions related to turfgrass, "
-                    "lawncare, mowing, fertilization, weed control, irrigation, disease diagnostics, grass types, and "
-                    "related turf management practices. If someone asks anything outside this domain—including topics like politics, history, science, or general advice—"
-                    "respond with: 'I'm sorry, but I can only help with lawncare and turfgrass-related questions.'"
-                )
-            },
-            {"role": "user", "content": user_input}
-        ]
+        messages=messages
     )
-    return response.choices[0].message["content"]
 
+    # Extract the assistant's reply
+    result = response.choices[0].message["content"]
 
+    # Add the assistant's reply to session memory
+    add_message(session_id, "assistant", result)
+
+    return result

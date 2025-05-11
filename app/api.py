@@ -4,7 +4,7 @@ from app.services.openai_service import get_turf_response
 from fastapi.responses import JSONResponse
 from app.services.retrieval_service import retrieve_relevant_context, generate_response
 from app.services.embedding_service import extract_text_from_pdf, extract_text_from_url, embed_and_store
-
+from app.services.conversation_service import get_session_messages, add_message, clear_session
 router = APIRouter()
 
 class Query(BaseModel):
@@ -23,13 +23,15 @@ def options_handler():
     )
 
 @router.post("/diagnose")
-def diagnose(query: Query):
-    try:
-        result = get_turf_response(query.user_input)
-    except Exception as e:
-        print("Error in get_turf_response:", e)
-        result = "An error occurred while generating a response."
+@router.post("/diagnose")
+def diagnose(query: Query, session_id: str = "default"):
+    result = get_turf_response(query.user_input, session_id)
     return {"response": result}
+
+@router.post("/admin/reset-session")
+def reset_session(session_id: str = "default"):
+    clear_session(session_id)
+    return {"status": f"Session '{session_id}' has been cleared."}
 
 @router.post("/rag-diagnose")
 def rag_diagnose(query: Query):
