@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse
 from app.services.retrieval_service import retrieve_relevant_context, generate_response
 from app.services.embedding_service import extract_text_from_pdf, extract_text_from_url, embed_and_store
 from app.services.conversation_service import get_session_messages, add_message, clear_session
+from app.services.image_service import handle_image_diagnosis
 router = APIRouter()
 
 class Query(BaseModel):
@@ -66,3 +67,9 @@ def load_url(url: str, source_id: str):
     text = extract_text_from_url(url)
     embed_and_store(text, source_id)
     return {"status": "URL processed and embedded", "source_id": source_id}
+
+@router.post("/diagnose-image")
+async def diagnose_image(file: UploadFile = File(...)):
+    # this is where you'll call a helper function
+    result = await handle_image_diagnosis(file)
+    return {"response": result}
