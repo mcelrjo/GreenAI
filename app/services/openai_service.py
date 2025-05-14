@@ -5,7 +5,7 @@ from app.services.retrieval_service import retrieve_relevant_context
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-def get_turf_response(user_input: str, session_id: str = "default") -> str:
+def get_turf_response(user_input: str, session_id: str = "default", image_url: str = None) -> str:
     if image_url:
         # Use GPT-4 with vision support
         messages = [
