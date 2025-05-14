@@ -16,7 +16,7 @@ def get_turf_response(user_input: str, session_id: str = "default", image_url: s
             ]}
         ]
         response = openai.ChatCompletion.create(
-            model="gpt-4-vision-preview",
+            model="gpt-4o",
             messages=messages,
             max_tokens=1000
         )
