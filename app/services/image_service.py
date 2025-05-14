@@ -7,7 +7,7 @@ async def handle_image_diagnosis(file):
     b64_img = base64.b64encode(contents).decode()
 
     response = openai.ChatCompletion.create(
-        model="gpt-4-vision-preview",
+        model="gpt-4o",
         messages=[
             {"role": "user", "content": [
                 {"type": "text", "text": "What's wrong with this turfgrass?"},
